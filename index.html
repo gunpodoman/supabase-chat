@@ -3,61 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supabase 실시간 시스템</title>
+    <title>Chat App</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="flex items-center justify-center min-h-screen p-4 bg-slate-100">
-
-    <div id="app" class="w-full max-w-md bg-white h-[800px] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col relative">
+<body class="bg-slate-100 flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md bg-white h-[700px] shadow-2xl rounded-[2rem] overflow-hidden flex flex-col border border-gray-200">
         
-        <section id="view-login" class="view p-10 flex-1 flex flex-col justify-center">
-            <div class="text-center mb-10">
-                <div class="inline-block p-4 bg-emerald-50 text-3xl rounded-3xl mb-4">🔓</div>
-                <h1 class="text-3xl font-bold">로그인</h1>
-                <p class="text-gray-500 mt-2">아이디와 비번을 입력하세요.</p>
-            </div>
-            <div class="space-y-4">
-                <input type="text" id="login-id" placeholder="아이디" class="input-field">
-                <input type="password" id="login-pw" placeholder="비밀번호" class="input-field">
-                <button id="btn-login" class="btn-primary bg-emerald-500 shadow-emerald-100">접속하기</button>
-                <button id="go-to-signup" class="w-full py-3 text-emerald-600 font-semibold hover:bg-emerald-50 rounded-xl transition">계정이 없으신가요? 회원가입</button>
-            </div>
-        </section>
+        <div id="view-login" class="p-8 flex-1 flex flex-col justify-center">
+            <h1 class="text-2xl font-bold mb-6 text-center">로그인</h1>
+            <input type="text" id="login-id" placeholder="아이디" class="w-full p-4 mb-3 bg-gray-50 rounded-xl outline-none border">
+            <input type="password" id="login-pw" placeholder="비밀번호" class="w-full p-4 mb-6 bg-gray-50 rounded-xl outline-none border">
+            <button id="btn-login" class="w-full py-4 bg-emerald-500 text-white font-bold rounded-xl mb-4">접속하기</button>
+            <button id="go-to-signup" class="w-full text-emerald-600 text-sm font-semibold">회원가입 하러가기</button>
+        </div>
 
-        <section id="view-signup" class="view hidden p-10 flex-1 flex flex-col justify-center">
-            <div class="text-center mb-10">
-                <div class="inline-block p-4 bg-blue-50 text-3xl rounded-3xl mb-4">📝</div>
-                <h1 class="text-3xl font-bold">회원가입</h1>
-                <p class="text-gray-500 mt-2">새로운 계정을 만드세요.</p>
-            </div>
-            <div class="space-y-4">
-                <input type="text" id="signup-id" placeholder="새 아이디" class="input-field">
-                <input type="password" id="signup-pw" placeholder="새 비밀번호" class="input-field">
-                <button id="btn-signup" class="btn-primary bg-blue-500 shadow-blue-100">가입 완료</button>
-                <button id="go-to-login" class="w-full py-3 text-blue-600 font-semibold hover:bg-blue-50 rounded-xl transition">이미 계정이 있나요? 로그인</button>
-            </div>
-        </section>
+        <div id="view-signup" class="p-8 flex-1 flex flex-col justify-center" style="display:none;">
+            <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">회원가입</h1>
+            <input type="text" id="signup-id" placeholder="새 아이디" class="w-full p-4 mb-3 bg-gray-50 rounded-xl outline-none border">
+            <input type="password" id="signup-pw" placeholder="새 비밀번호" class="w-full p-4 mb-6 bg-gray-50 rounded-xl outline-none border">
+            <button id="btn-signup" class="w-full py-4 bg-blue-500 text-white font-bold rounded-xl mb-4">가입 완료</button>
+            <button id="go-to-login" class="w-full text-blue-600 text-sm font-semibold">로그인으로 돌아가기</button>
+        </div>
 
-        <section id="view-chat" class="view hidden flex flex-col h-full">
-            <header class="p-6 border-b flex justify-between items-center bg-white sticky top-0 z-10">
-                <div>
-                    <span class="text-[10px] text-emerald-500 font-bold uppercase tracking-tighter">Live connected</span>
-                    <h2 id="user-display" class="text-xl font-bold text-gray-800">User</h2>
-                </div>
-                <button id="btn-logout" class="text-xs font-bold text-rose-500 bg-rose-50 px-3 py-2 rounded-xl">로그아웃</button>
+        <div id="view-chat" class="flex-1 flex flex-col h-full" style="display:none;">
+            <header class="p-5 border-b flex justify-between items-center bg-white">
+                <span id="user-display" class="font-bold">User</span>
+                <button id="btn-logout" class="text-rose-500 text-xs font-bold">로그아웃</button>
             </header>
-            <div id="chat-box" class="flex-1 p-5 overflow-y-auto space-y-4 bg-slate-50 flex flex-col">
-                </div>
-            <div class="p-4 bg-white border-t flex gap-2">
-                <input type="text" id="chat-input" placeholder="메시지를 입력하세요" class="flex-1 p-3 bg-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500">
-                <button id="btn-send" class="bg-emerald-500 text-white px-6 py-3 rounded-2xl font-bold active:scale-95 transition shadow-lg">전송</button>
+            <div id="chat-box" class="flex-1 p-5 overflow-y-auto bg-slate-50 flex flex-col"></div>
+            <div class="p-4 border-t flex gap-2 bg-white">
+                <input type="text" id="chat-input" placeholder="메시지 입력..." class="flex-1 p-3 bg-gray-100 rounded-xl outline-none">
+                <button id="btn-send" class="bg-emerald-500 text-white px-5 rounded-xl font-bold">전송</button>
             </div>
-        </section>
+        </div>
 
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
