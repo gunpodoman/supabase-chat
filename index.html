@@ -3,43 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat App</title>
+    <title>수파베이스 채팅</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-100 flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md bg-white h-[700px] shadow-2xl rounded-[2rem] overflow-hidden flex flex-col border border-gray-200">
+<body class="bg-[#f0f2f5] min-h-screen flex items-center justify-center p-6">
+
+    <div id="app" class="w-full max-w-[1100px] h-[750px] bg-white rounded-[2.5rem] shadow-2xl overflow-hidden flex relative">
         
-        <div id="view-login" class="p-8 flex-1 flex flex-col justify-center">
-            <h1 class="text-2xl font-bold mb-6 text-center">로그인</h1>
-            <input type="text" id="login-id" placeholder="아이디" class="w-full p-4 mb-3 bg-gray-50 rounded-xl outline-none border">
-            <input type="password" id="login-pw" placeholder="비밀번호" class="w-full p-4 mb-6 bg-gray-50 rounded-xl outline-none border">
-            <button id="btn-login" class="w-full py-4 bg-emerald-500 text-white font-bold rounded-xl mb-4">접속하기</button>
-            <button id="go-to-signup" class="w-full text-emerald-600 text-sm font-semibold">회원가입 하러가기</button>
-        </div>
-
-        <div id="view-signup" class="p-8 flex-1 flex flex-col justify-center" style="display:none;">
-            <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">회원가입</h1>
-            <input type="text" id="signup-id" placeholder="새 아이디" class="w-full p-4 mb-3 bg-gray-50 rounded-xl outline-none border">
-            <input type="password" id="signup-pw" placeholder="새 비밀번호" class="w-full p-4 mb-6 bg-gray-50 rounded-xl outline-none border">
-            <button id="btn-signup" class="w-full py-4 bg-blue-500 text-white font-bold rounded-xl mb-4">가입 완료</button>
-            <button id="go-to-login" class="w-full text-blue-600 text-sm font-semibold">로그인으로 돌아가기</button>
-        </div>
-
-        <div id="view-chat" class="flex-1 flex flex-col h-full" style="display:none;">
-            <header class="p-5 border-b flex justify-between items-center bg-white">
-                <span id="user-display" class="font-bold">User</span>
-                <button id="btn-logout" class="text-rose-500 text-xs font-bold">로그아웃</button>
-            </header>
-            <div id="chat-box" class="flex-1 p-5 overflow-y-auto bg-slate-50 flex flex-col"></div>
-            <div class="p-4 border-t flex gap-2 bg-white">
-                <input type="text" id="chat-input" placeholder="메시지 입력..." class="flex-1 p-3 bg-gray-100 rounded-xl outline-none">
-                <button id="btn-send" class="bg-emerald-500 text-white px-5 rounded-xl font-bold">전송</button>
+        <section id="view-auth" class="absolute inset-0 z-50 bg-white flex flex-col items-center justify-center p-10">
+            <div id="auth-box" class="w-full max-w-md text-center">
+                <div class="inline-block p-6 bg-emerald-50 text-emerald-500 rounded-full text-4xl mb-6">✨</div>
+                <h1 id="auth-title" class="text-4xl font-extrabold text-gray-900 mb-2">Welcome</h1>
+                <p id="auth-desc" class="text-gray-500 mb-10">계정에 접속하여 대화를 시작하세요.</p>
+                
+                <div class="space-y-4 text-left">
+                    <input type="text" id="id-input" placeholder="아이디" class="premium-input">
+                    <input type="password" id="pw-input" placeholder="비밀번호" class="premium-input">
+                    <button id="btn-main-auth" class="w-full py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-lg hover:bg-emerald-700 transition-all">접속하기</button>
+                    <button id="btn-toggle-auth" class="w-full py-4 text-gray-500 font-medium hover:text-emerald-600 transition">계정이 없으신가요? 회원가입</button>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <aside id="sidebar" class="w-[300px] border-r border-gray-100 flex flex-col bg-slate-50">
+            <div class="p-8">
+                <h2 class="text-2xl font-black text-emerald-600 mb-1">CHAT HUB</h2>
+                <div id="user-badge" class="flex items-center gap-3 mt-6 p-4 bg-white rounded-2xl shadow-sm">
+                    <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold">U</div>
+                    <div>
+                        <p id="display-name" class="font-bold text-gray-800">User</p>
+                        <span id="role-tag" class="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-400">User</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 px-4 space-y-2">
+                <button onclick="switchTab('chat')" class="nav-item active">💬 실시간 채팅</button>
+                <button id="nav-admin" onclick="switchTab('admin')" class="nav-item hidden">🛡️ 관리자 대시보드</button>
+            </nav>
+
+            <div class="p-6">
+                <button id="btn-logout" class="w-full py-3 bg-rose-50 text-rose-500 font-bold rounded-xl hover:bg-rose-100 transition">로그아웃</button>
+            </div>
+        </aside>
+
+        <main id="tab-chat" class="flex-1 flex flex-col">
+            <header class="h-20 border-b flex items-center px-8 justify-between">
+                <h3 class="font-bold text-lg">General Chat</h3>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <span class="text-xs text-gray-400 font-medium uppercase">Live</span>
+                </div>
+            </header>
+            <div id="chat-box" class="flex-1 p-8 overflow-y-auto space-y-4 bg-white"></div>
+            <div class="p-6 bg-white border-t">
+                <div class="flex gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
+                    <input type="text" id="message-input" placeholder="메시지를 입력하세요..." class="flex-1 bg-transparent p-3 outline-none">
+                    <button id="btn-send" class="bg-emerald-600 text-white px-6 rounded-xl font-bold shadow-md hover:bg-emerald-700 transition">전송</button>
+                </div>
+            </div>
+        </main>
+
+        <main id="tab-admin" class="flex-1 hidden flex-col p-8 bg-white overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-6 text-gray-800">Admin Dashboard</h3>
+            
+            <div class="grid grid-cols-2 gap-6 mb-10">
+                <div class="p-6 bg-slate-50 rounded-3xl">
+                    <p class="text-gray-400 text-sm mb-1">총 가입자 수</p>
+                    <h4 id="count-users" class="text-3xl font-black">0</h4>
+                </div>
+                <div class="p-6 bg-slate-50 rounded-3xl">
+                    <p class="text-gray-400 text-sm mb-1">누적 메시지</p>
+                    <h4 id="count-msgs" class="text-3xl font-black">0</h4>
+                </div>
+            </div>
+
+            <div class="mb-10">
+                <h4 class="font-bold mb-4 flex items-center gap-2">사용자 관리<span class="text-xs font-normal text-gray-400">(프로필 테이블 데이터)</span></h4>
+                <div id="admin-user-list" class="space-y-2"></div>
+            </div>
+
+            <div>
+                <h4 class="font-bold mb-4 flex items-center gap-2">채팅 관리<span class="text-xs font-normal text-gray-400">(최근 메시지 삭제)</span></h4>
+                <div id="admin-msg-list" class="space-y-2 text-sm"></div>
+            </div>
+        </main>
 
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
