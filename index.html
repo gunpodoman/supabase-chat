@@ -6,145 +6,58 @@
     <title>Supabase 실시간 시스템</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap');
-        body { font-family: 'Pretendard', sans-serif; background: #f1f5f9; }
-        .hidden { display: none !important; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen p-4 bg-slate-100">
 
-    <div id="app" class="w-full max-w-md bg-white h-[750px] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-gray-100">
+    <div id="app" class="w-full max-w-md bg-white h-[800px] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col relative">
         
-        <div id="loginView" class="p-10 flex-1 flex flex-col justify-center animate-fade-in">
+        <section id="view-login" class="view p-10 flex-1 flex flex-col justify-center">
             <div class="text-center mb-10">
-                <div class="inline-block p-4 bg-emerald-50 rounded-3xl mb-4 text-3xl">🔓</div>
-                <h1 class="text-3xl font-bold text-gray-900">로그인</h1>
-                <p class="text-gray-500 mt-2">등록된 계정으로 접속하세요.</p>
+                <div class="inline-block p-4 bg-emerald-50 text-3xl rounded-3xl mb-4">🔓</div>
+                <h1 class="text-3xl font-bold">로그인</h1>
+                <p class="text-gray-500 mt-2">아이디와 비번을 입력하세요.</p>
             </div>
             <div class="space-y-4">
-                <input type="text" id="loginId" placeholder="아이디" class="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
-                <input type="password" id="loginPw" placeholder="비밀번호" class="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
-                <button onclick="doLogin()" class="w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-all">접속하기</button>
-                <button onclick="showSignup()" class="w-full py-4 text-emerald-600 font-semibold mt-2 hover:bg-emerald-50 rounded-2xl">계정이 없으신가요? 회원가입</button>
+                <input type="text" id="login-id" placeholder="아이디" class="input-field">
+                <input type="password" id="login-pw" placeholder="비밀번호" class="input-field">
+                <button id="btn-login" class="btn-primary bg-emerald-500 shadow-emerald-100">접속하기</button>
+                <button id="go-to-signup" class="w-full py-3 text-emerald-600 font-semibold hover:bg-emerald-50 rounded-xl transition">계정이 없으신가요? 회원가입</button>
             </div>
-        </div>
+        </section>
 
-        <div id="signupView" class="hidden p-10 flex-1 flex flex-col justify-center animate-fade-in">
+        <section id="view-signup" class="view hidden p-10 flex-1 flex flex-col justify-center">
             <div class="text-center mb-10">
-                <div class="inline-block p-4 bg-blue-50 rounded-3xl mb-4 text-3xl">📝</div>
-                <h1 class="text-3xl font-bold text-gray-900">회원가입</h1>
-                <p class="text-gray-500 mt-2">새로운 계정을 생성합니다.</p>
+                <div class="inline-block p-4 bg-blue-50 text-3xl rounded-3xl mb-4">📝</div>
+                <h1 class="text-3xl font-bold">회원가입</h1>
+                <p class="text-gray-500 mt-2">새로운 계정을 만드세요.</p>
             </div>
             <div class="space-y-4">
-                <input type="text" id="signupId" placeholder="새 아이디" class="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                <input type="password" id="signupPw" placeholder="새 비밀번호" class="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                <button onclick="doSignup()" class="w-full py-4 bg-blue-500 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-all">가입 완료</button>
-                <button onclick="showLogin()" class="w-full py-4 text-blue-600 font-semibold mt-2 hover:bg-blue-50 rounded-2xl">이미 계정이 있나요? 로그인</button>
+                <input type="text" id="signup-id" placeholder="새 아이디" class="input-field">
+                <input type="password" id="signup-pw" placeholder="새 비밀번호" class="input-field">
+                <button id="btn-signup" class="btn-primary bg-blue-500 shadow-blue-100">가입 완료</button>
+                <button id="go-to-login" class="w-full py-3 text-blue-600 font-semibold hover:bg-blue-50 rounded-xl transition">이미 계정이 있나요? 로그인</button>
             </div>
-        </div>
+        </section>
 
-        <div id="chatMainView" class="hidden flex flex-col h-full">
-            <header class="p-6 border-b flex justify-between items-center bg-white">
-                <h2 id="displayId" class="text-xl font-bold text-gray-800 italic">User</h2>
-                <button onclick="logout()" class="text-xs font-bold text-rose-500 bg-rose-50 px-3 py-2 rounded-xl">로그아웃</button>
+        <section id="view-chat" class="view hidden flex flex-col h-full">
+            <header class="p-6 border-b flex justify-between items-center bg-white sticky top-0 z-10">
+                <div>
+                    <span class="text-[10px] text-emerald-500 font-bold uppercase tracking-tighter">Live connected</span>
+                    <h2 id="user-display" class="text-xl font-bold text-gray-800">User</h2>
+                </div>
+                <button id="btn-logout" class="text-xs font-bold text-rose-500 bg-rose-50 px-3 py-2 rounded-xl">로그아웃</button>
             </header>
-            <div id="chatBox" class="flex-1 p-5 overflow-y-auto space-y-4 bg-slate-50 flex flex-col"></div>
+            <div id="chat-box" class="flex-1 p-5 overflow-y-auto space-y-4 bg-slate-50 flex flex-col">
+                </div>
             <div class="p-4 bg-white border-t flex gap-2">
-                <input type="text" id="chatInput" placeholder="메시지 입력..." class="flex-1 p-3 bg-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500" onkeypress="if(event.keyCode==13) sendChat()">
-                <button onclick="sendChat()" class="bg-emerald-500 text-white px-6 py-3 rounded-2xl font-bold">전송</button>
+                <input type="text" id="chat-input" placeholder="메시지를 입력하세요" class="flex-1 p-3 bg-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500">
+                <button id="btn-send" class="bg-emerald-500 text-white px-6 py-3 rounded-2xl font-bold active:scale-95 transition shadow-lg">전송</button>
             </div>
-        </div>
+        </section>
+
     </div>
 
-    <script>
-        // Supabase 연결 설정 (제공해주신 정보)
-        const SB_URL = 'https://quqnmzarcrhwbdokfsgz.supabase.co'; 
-        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1cW5temFyY3Jod2Jkb2tmc2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MTc3ODQsImV4cCI6MjA4MjA5Mzc4NH0.ZBjfXMX3bKk6vJRmsb49MkV3Lq-O5stujPWk_44-kdc';
-        const supabase = supabase.createClient(SB_URL, SB_KEY);
-
-        let currentUser = localStorage.getItem("sb_user");
-        if(currentUser) goToChat();
-
-        // --- 화면 전환 함수 ---
-        function showSignup() {
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('signupView').classList.remove('hidden');
-        }
-
-        function showLogin() {
-            document.getElementById('signupView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-        }
-
-        function goToChat() {
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('signupView').classList.add('hidden');
-            document.getElementById('chatMainView').classList.remove('hidden');
-            document.getElementById('displayId').innerText = currentUser;
-            initChat();
-        }
-
-        // --- 기능 함수 ---
-        async function doSignup() {
-            const id = document.getElementById('signupId').value;
-            const pw = document.getElementById('signupPw').value;
-            if(!id || !pw) return alert("아이디와 비밀번호를 입력하세요.");
-
-            const { data: exist } = await supabase.from('profiles').select('*').eq('username', id);
-            if(exist && exist.length > 0) return alert("이미 사용 중인 아이디입니다.");
-
-            const { error } = await supabase.from('profiles').insert([{ username: id, password: pw }]);
-            if(!error) {
-                alert("가입 성공! 로그인 해주세요.");
-                showLogin();
-            } else {
-                alert("오류: " + error.message);
-            }
-        }
-
-        async function doLogin() {
-            const id = document.getElementById('loginId').value;
-            const pw = document.getElementById('loginPw').value;
-            const { data } = await supabase.from('profiles').select('*').eq('username', id).eq('password', pw);
-            if(data && data.length > 0) {
-                currentUser = id;
-                localStorage.setItem("sb_user", id);
-                goToChat();
-            } else {
-                alert("정보가 일치하지 않습니다.");
-            }
-        }
-
-        // --- 채팅 로직 ---
-        function initChat() {
-            loadHistory();
-            supabase.channel('messages_realtime').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, p => render(p.new)).subscribe();
-        }
-
-        async function loadHistory() {
-            const { data } = await supabase.from('messages').select('*').order('created_at', { ascending: true });
-            if(data) data.forEach(render);
-        }
-
-        async function sendChat() {
-            const el = document.getElementById('chatInput');
-            if(!el.value.trim()) return;
-            await supabase.from('messages').insert([{ username: currentUser, content: el.value }]);
-            el.value = '';
-        }
-
-        function render(m) {
-            const box = document.getElementById('chatBox');
-            const isMe = m.username === currentUser;
-            const div = document.createElement('div');
-            div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} mb-2`;
-            div.innerHTML = `<span class="text-[10px] text-gray-400 mb-1 px-1">${m.username}</span><div class="${isMe ? 'bg-emerald-500 text-white' : 'bg-white text-gray-800'} p-3 rounded-2xl text-sm shadow-sm max-w-[85%]">${m.content}</div>`;
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight;
-        }
-
-        function logout() { localStorage.removeItem("sb_user"); location.reload(); }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
