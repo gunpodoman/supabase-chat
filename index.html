@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>supabase 채팅</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap');
+        body { font-family: 'Pretendard', sans-serif; background: #f8fafc; }
+        .chat-bubble { max-width: 80%; border-radius: 1.25rem; padding: 0.75rem 1rem; font-size: 0.925rem; }
+        .my-msg { background: #10b981; color: white; border-bottom-right-radius: 4px; }
+        .other-msg { background: white; color: #1e293b; border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
+        .animate-pop { animation: pop 0.2s ease-out; }
+        @keyframes pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="app" class="w-full max-w-md bg-white h-[800px] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col border border-gray-100">
+        
+        <div id="authView" class="p-10 flex-1 flex flex-col justify-center">
+            <div class="text-center mb-10">
+                <div class="inline-block p-4 bg-emerald-50 rounded-3xl mb-4">
+                    <span class="text-4xl">⚡</span>
+                </div>
+                <h1 id="authTitle" class="text-3xl font-bold text-gray-900">로그인</h1>
+                <p id="authSub" class="text-gray-500 mt-2">서비스에 접속하여 대화를 시작하세요.</p>
+            </div>
+            
+            <div class="space-y-4">
+                <input type="text" id="userId" placeholder="아이디" class="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                <input type="password" id="userPw" placeholder="비밀번호" class="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                <button onclick="handleAuth()" id="mainBtn" class="w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 active:scale-95 transition-all">접속하기</button>
+                <button onclick="toggleAuth()" id="subBtn" class="w-full py-4 text-emerald-600 font-semibold hover:bg-emerald-50 rounded-2xl transition-all">계정이 없으신가요? 회원가입</button>
+            </div>
+        </div>
+
+        <div id="mainView" class="hidden flex flex-col h-full">
+            <header class="px-6 py-5 border-b bg-white flex justify-between items-center shrink-0">
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                        <p class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Live Server</p>
+                    </div>
+                    <h2 id="displayId" class="text-xl font-bold text-gray-800">User</h2>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleSettings()" class="w-10 h-10 flex items-center justify-center bg-gray-50 rounded-full hover:bg-gray-100 transition">⚙️</button>
+                    <button onclick="logout()" class="px-4 py-2 bg-rose-50 text-rose-500 rounded-xl text-xs font-bold hover:bg-rose-100">로그아웃</button>
+                </div>
+            </header>
+
+            <div id="settingsSection" class="hidden p-6 bg-white border-b space-y-3 animate-pop">
+                <p class="text-sm font-bold text-gray-700 mb-1">내 정보 수정</p>
+                <input type="text" id="newId" placeholder="새 아이디" class="w-full p-3 bg-gray-50 rounded-xl outline-none border border-gray-100">
+                <input type="password" id="newPw" placeholder="새 비밀번호" class="w-full p-3 bg-gray-50 rounded-xl outline-none border border-gray-100">
+                <button onclick="updateProfile()" class="w-full py-3 bg-gray-900 text-white rounded-xl font-bold text-sm">정보 업데이트</button>
+            </div>
+
+            <div id="chatBox" class="flex-1 p-5 overflow-y-auto space-y-4 bg-slate-50 flex flex-col">
+                </div>
+
+            <div class="p-4 bg-white border-t flex gap-2 shrink-0">
+                <input type="text" id="chatInput" placeholder="메시지를 입력하세요..." class="flex-1 p-3 bg-gray-100 rounded-2xl outline-none focus:ring-2 focus:ring-emerald-500" onkeypress="if(event.keyCode==13) sendChat()">
+                <button onclick="sendChat()" class="bg-emerald-500 text-white px-6 py-3 rounded-2xl font-bold active:scale-95 transition-all shadow-md">전송</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- [Supabase 설정 정보 적용됨] ---
+        const SB_URL = 'https://quqnmzarcrhwbdokfsgz.supabase.co'; 
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1cW5temFyY3Jod2Jkb2tmc2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY1MTc3ODQsImV4cCI6MjA4MjA5Mzc4NH0.ZBjfXMX3bKk6vJRmsb49MkV3Lq-O5stujPWk_44-kdc';
+        const supabase = supabase.createClient(SB_URL, SB_KEY);
+
+        let isSignup = false;
+        let currentUser = localStorage.getItem("sb_user");
+
+        if(currentUser) showMain();
+
+        // [인증 처리]
+        async function handleAuth() {
+            const id = document.getElementById('userId').value;
+            const pw = document.getElementById('userPw').value;
+            if(!id || !pw) return alert("아이디와 비밀번호를 입력해주세요.");
+
+            if(isSignup) {
+                // 회원가입
+                const { data: exist } = await supabase.from('profiles').select('*').eq('username', id);
+                if(exist && exist.length > 0) return alert("이미 사용 중인 아이디입니다.");
+                
+                const { error } = await supabase.from('profiles').insert([{ username: id, password: pw }]);
+                if(!error) {
+                    alert("축하합니다! 회원가입이 완료되었습니다.");
+                    toggleAuth();
+                }
+            } else {
+                // 로그인
+                const { data, error } = await supabase.from('profiles').select('*').eq('username', id).eq('password', pw);
+                if(data && data.length > 0) {
+                    currentUser = id;
+                    localStorage.setItem("sb_user", id);
+                    showMain();
+                } else {
+                    alert("아이디 또는 비밀번호가 올바르지 않습니다.");
+                }
+            }
+        }
+
+        // [메인 로직 및 실시간 구독]
+        function showMain() {
+            document.getElementById('authView').classList.add('hidden');
+            document.getElementById('mainView').classList.remove('hidden');
+            document.getElementById('displayId').innerText = currentUser;
+            document.getElementById('newId').value = currentUser;
+            
+            loadHistory();
+
+            // 실시간 구독 (메시지가 추가될 때마다 즉시 반영)
+            supabase.channel('public:messages')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+                    appendMsg(payload.new);
+                })
+                .subscribe();
+        }
+
+        async function loadHistory() {
+            const { data } = await supabase.from('messages').select('*').order('created_at', { ascending: true });
+            if(data) data.forEach(appendMsg);
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chatInput');
+            if(!input.value.trim()) return;
+            const msg = input.value;
+            input.value = '';
+            
+            const { error } = await supabase.from('messages').insert([{ username: currentUser, content: msg }]);
+            if(error) console.error(error);
+        }
+
+        function appendMsg(m) {
+            const box = document.getElementById('chatBox');
+            const isMe = m.username === currentUser;
+            
+            const div = document.createElement('div');
+            div.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'} animate-pop`;
+            div.innerHTML = `
+                <span class="text-[10px] text-gray-400 mb-1 px-1">${m.username}</span>
+                <div class="chat-bubble ${isMe ? 'my-msg shadow-md' : 'other-msg shadow-sm'}">
+                    ${m.content}
+                </div>
+            `;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // [기타 기능]
+        async function updateProfile() {
+            const nId = document.getElementById('newId').value;
+            const nPw = document.getElementById('newPw').value;
+            const { error } = await supabase.from('profiles').update({ username: nId, password: nPw }).eq('username', currentUser);
+            if(!error) {
+                alert("정보가 수정되었습니다. 다시 로그인해 주세요.");
+                logout();
+            }
+        }
+
+        function toggleAuth() {
+            isSignup = !isSignup;
+            document.getElementById('authTitle').innerText = isSignup ? "회원가입" : "로그인";
+            document.getElementById('authSub').innerText = isSignup ? "새로운 계정을 생성하세요." : "서비스에 접속하여 대화를 시작하세요.";
+            document.getElementById('mainBtn').innerText = isSignup ? "가입 완료" : "접속하기";
+            document.getElementById('subBtn').innerText = isSignup ? "로그인 하러 가기" : "계정이 없으신가요? 회원가입";
+        }
+
+        function toggleSettings() { document.getElementById('settingsSection').classList.toggle('hidden'); }
+        function logout() { localStorage.removeItem("sb_user"); location.reload(); }
+    </script>
+</body>
+</html>
