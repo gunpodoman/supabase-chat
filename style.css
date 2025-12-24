@@ -1,66 +1,184 @@
-@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
+/* 1. 기본 폰트 및 변수 설정 */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard-dynamic-subset.css');
 
-body { font-family: 'Pretendard', sans-serif; }
-
-.premium-input {
-    width: 100%;
-    padding: 1.1rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 1.25rem;
-    outline: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+:root {
+    --primary: #10b981; /* Emerald 500 */
+    --primary-dark: #059669;
+    --bg-main: #f8fafc;
+    --sidebar-bg: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius-lg: 2rem;
+    --radius-md: 1.25rem;
+    --shadow-premium: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
 }
 
-.premium-input:focus {
-    background: white;
-    border-color: #10b981;
-    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1);
+/* 2. 레이아웃 & 아이패드 전체화면 최적화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-.nav-item {
-    width: 100%;
-    padding: 1rem 1.5rem;
-    text-align: left;
-    border-radius: 1rem;
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: #64748b;
-    transition: all 0.2s;
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    /* 아이패드 브라우저 상단바/하단 홈 바 면적 고려 */
+    height: 100vh;
+    height: -webkit-fill-available;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.nav-item.active {
-    background: white;
-    color: #10b981;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-/* 말풍선 디자인 */
-.bubble {
-    max-width: 70%;
-    padding: 1rem 1.25rem;
-    border-radius: 1.5rem;
-    font-size: 0.95rem;
-    line-height: 1.5;
+/* 3. 사이드바 네비게이션 버튼 디자인 */
+.nav-btn {
+    transition: var(--transition);
     position: relative;
+    overflow: hidden;
+}
+
+.nav-btn::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 0;
+    background-color: var(--primary);
+    border-radius: 0 4px 4px 0;
+    transition: var(--transition);
+}
+
+.nav-btn.active {
+    background-color: #ecfdf5 !important; /* Emerald 50 */
+    color: var(--primary) !important;
+}
+
+.nav-btn.active::after {
+    height: 60%;
+}
+
+.nav-btn:hover:not(.active) {
+    background-color: #f1f5f9;
+    transform: translateX(4px);
+}
+
+/* 4. 채팅 메시지 말풍선 (고급 렌더링) */
+#chat-content {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+}
+
+.message-wrapper {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
     animation: slideUp 0.4s ease-out forwards;
 }
 
-.bubble-me {
-    background: #10b981;
-    color: white;
-    border-bottom-right-radius: 4px;
-}
-
-.bubble-other {
-    background: #f1f5f9;
-    color: #1e293b;
-    border-bottom-left-radius: 4px;
-}
-
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.hidden { display: none !important; }
+.bubble {
+    max-width: 75%;
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    position: relative;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+}
+
+/* 내가 보낸 메시지 */
+.my-bubble {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    border-radius: 1.5rem 1.5rem 0.25rem 1.5rem;
+    align-self: flex-end;
+}
+
+/* 상대방이 보낸 메시지 */
+.other-bubble {
+    background: white;
+    color: var(--text-main);
+    border: 1px solid #e2e8f0;
+    border-radius: 1.5rem 1.5rem 1.5rem 0.25rem;
+    align-self: flex-start;
+}
+
+/* 5. 입력창 및 전송 버튼 (터치 반응성 강화) */
+input#msg-input {
+    transition: var(--transition);
+    /* 아이패드 텍스트 선택 시 확대 방지 */
+    font-size: 16px; 
+}
+
+#btn-send {
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+#btn-send:active {
+    transform: scale(0.92);
+    filter: brightness(0.9);
+}
+
+/* 6. 관리자 대시보드 전용 스타일 */
+.admin-card {
+    background: white;
+    padding: 2rem;
+    border-radius: var(--radius-md);
+    border: 1px solid #e2e8f0;
+    box-shadow: var(--shadow-premium);
+    transition: var(--transition);
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary);
+}
+
+.log-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    transition: var(--transition);
+}
+
+.log-item:hover {
+    background-color: #f8fafc;
+}
+
+/* 7. 공통 스크롤바 디자인 */
+.custom-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* 8. 미디어 쿼리 - 아이패드 가로/세로 대응 */
+@media (max-width: 768px) {
+    .bubble { max-width: 85%; }
+    #app-shell { flex-direction: column; }
+    aside { width: 100% !important; height: auto !important; border-r: none; border-b: 1px solid #e2e8f0; }
+}
